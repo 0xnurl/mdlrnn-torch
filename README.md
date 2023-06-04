@@ -41,7 +41,7 @@ Please use this BibTeX if you wish to cite this project in your publication:
 | Dyck-1   | 1              | dyck_1.pt           | 100%             | 
 
 
-## Fine-tuning using backprop
+## Fine-tuning
 
 The networks use only differentiable activations (ReLU, tanh, sigmoid) and a final softmax layer, so they can be fine-tuned using regular backpropagation.  
 
@@ -71,7 +71,7 @@ for epoch in range(1000):
 
 ## Evolving networks from scratch for full MDL
 
-MDLRNNs optimize the Minimum Description Length objective, which isn't differentiable. We use a genetic algorithm to train them and then port them to PyTorch. 
+MDLRNNs optimize the Minimum Description Length objective, which isn't differentiable. We use a genetic algorithm to train them and then port them to PyTorch, freezing the architecture but not the weights. 
 
 To evolve networks from scratch using a genetic algorithm, use the [genetic algorithm MDLRNN trainer](https://github.com/taucompling/mdlrnn) trainer here:
 https://github.com/taucompling/mdlrnn/
