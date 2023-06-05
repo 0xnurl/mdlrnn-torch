@@ -36,38 +36,13 @@ Please use this BibTeX if you wish to cite this project in your publication:
 | Language | # Hidden units | Network checkpoint  | Test performance |
 |----------|----------------|---------------------|------------------|  
 | aⁿbⁿ     | 1              | an_bn.pt            | 100%             |
-| aⁿbⁿcⁿ   | 2              | an_bn_cn.pt         | 100%             | 
 | aⁿbᵐcⁿ⁺ᵐ   | 1              | an_bm_c_n_plus_m.pt | 100%             | 
 | Dyck-1   | 1              | dyck_1.pt           | 100%             | 
 
 
 ## Fine-tuning
 
-The networks use only differentiable activations (ReLU, tanh, sigmoid) and a final softmax layer, so they can be fine-tuned using regular backpropagation.  
-
-```
-an_bn_net = torch.load("models/an_bn.pt")
-
-optimizer = optim.Adam(net.parameters(), lr=0.001)
-loss_func = nn.CrossEntropyLoss()
-
-input_mask = torch.from_numpy(corpus.input_mask)
-
-inputs = torch.Tensor(corpus.input_sequence)
-inputs[~input_mask] = 0  # TODO make sure this makes sense.
-
-targets = torch.Tensor(corpus.target_sequence)[input_mask]
-
-for epoch in range(1000):
-    optimizer.zero_grad()
-    output = net(inputs)
-
-    loss = loss_func(output[input_mask], targets)
-    loss.backward()
-    optimizer.step()
-
-    print(f"Epoch {epoch} training loss: {loss.item():.3e}")
-```
+The networks use only differentiable activations (ReLU, tanh, sigmoid) and a final softmax layer, so they can be fine-tuned using regular backpropagation. See `examples` folder.
 
 ## Evolving networks from scratch for full MDL
 
@@ -75,7 +50,6 @@ MDLRNNs optimize the Minimum Description Length objective, which isn't different
 
 To evolve networks from scratch using a genetic algorithm, use the [genetic algorithm MDLRNN trainer](https://github.com/taucompling/mdlrnn) here:
 https://github.com/taucompling/mdlrnn/
-
 
 ## TODO
 
