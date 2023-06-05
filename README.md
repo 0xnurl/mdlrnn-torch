@@ -5,11 +5,11 @@
 MDLRNNs are recurrent neural nets that optimize the MDL objective, an approximation of Kolmogorov complexity.
 To do this we minimize the encoding length of the network's architecture itself, alongside the classical loss.
 
-Optimizing the encoding length makes it possible to prevent overfitting and reach perfect generalizations for many formal languages that aren't learned well by classical models, such as `aⁿbⁿ` and `Dyck-1`.
+Optimizing for encoding length makes it possible to prevent overfitting and reach perfect generalizations for many formal languages that aren't learned well by classical models, such as `aⁿbⁿ` and `Dyck-1`.
 
 It also results in very small networks, such as this `aⁿbⁿ` RNN that only has one hidden unit that serves as a counter:
 
-** #TODO image **
+<img src="an_bn.png" width="390px" style="margin: 15px 0 5px 0"> 
 
 ## Citing this work
 
@@ -71,9 +71,9 @@ for epoch in range(1000):
 
 ## Evolving networks from scratch for full MDL
 
-MDLRNNs optimize the Minimum Description Length objective, which isn't differentiable. We use a genetic algorithm to train them and then port them to PyTorch, freezing the architecture but not the weights. 
+MDLRNNs optimize the Minimum Description Length objective, which isn't differentiable. We use a genetic algorithm to evolve networks and then port them to PyTorch, freezing the architecture but not the weights. 
 
-To evolve networks from scratch using a genetic algorithm, use the [genetic algorithm MDLRNN trainer](https://github.com/taucompling/mdlrnn) trainer here:
+To evolve networks from scratch using a genetic algorithm, use the [genetic algorithm MDLRNN trainer](https://github.com/taucompling/mdlrnn) here:
 https://github.com/taucompling/mdlrnn/
 
 
