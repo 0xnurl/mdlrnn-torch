@@ -9,7 +9,7 @@ Optimizing for encoding length makes it possible to prevent overfitting and reac
 
 It also results in very small networks, such as this `aⁿbⁿ` RNN that only has one hidden unit that serves as a counter:
 
-<img src="an_bn.png" width="390px" style="margin: 15px 0 5px 0"> 
+<img src="assets/an_bn.png" width="390px" style="margin: 15px 0 5px 0"> 
 
 ## Citing this work
 
