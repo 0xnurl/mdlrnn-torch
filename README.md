@@ -39,6 +39,8 @@ Please use this BibTeX if you wish to cite this project in your publication:
 | aⁿbᵐcⁿ⁺ᵐ   | 1              | an_bm_c_n_plus_m.pt | 100%             | 
 | Dyck-1   | 1              | dyck_1.pt           | 100%             | 
 
+More on evaluation metrics [here](https://direct.mit.edu/tacl/article/doi/10.1162/tacl_a_00489/112499/Minimum-Description-Length-Recurrent-Neural).
+
 
 ## Fine-tuning
 
@@ -48,7 +50,7 @@ The networks use only standard activations (ReLU, tanh, sigmoid) and a final sof
 
 MDLRNNs optimize the Minimum Description Length objective, which isn't differentiable. We use a genetic algorithm to evolve networks and then port them to PyTorch, freezing the architecture but not the weights. 
 
-To evolve networks from scratch using a genetic algorithm, use the [Genetic Algorithm MDLRNN trainer](https://github.com/taucompling/mdlrnn) here:
+To evolve networks from scratch using a genetic algorithm, use the Genetic Algorithm MDLRNN trainer here:
 https://github.com/taucompling/mdlrnn/
 
 ## TODO

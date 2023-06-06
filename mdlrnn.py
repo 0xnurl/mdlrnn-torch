@@ -4,7 +4,7 @@ from torch import nn
 
 class MDLRNN(nn.Module):
     _ACTIVATION_ID_TO_TORCH = {
-        # 0 is identity. Not creating it for pickling standalone.
+        0: None,  # identity
         1: torch.relu,
         3: torch.tanh,
         4: torch.square,
@@ -19,30 +19,30 @@ class MDLRNN(nn.Module):
         layer_to_activation_to_units: dict[int, dict[int, frozenset[int]]],
     ):
         super(MDLRNN, self).__init__()
-        self.computation_graph_weights = computation_graph_weights
-        self.layer_to_activation_to_units = layer_to_activation_to_units
-        self.memory_to_layer_weights = memory_to_layer_weights
-        self.memory_unit_idxs_per_layer = memory_unit_idxs_per_layer
+        self._computation_graph_weights = computation_graph_weights
+        self._layer_to_activation_to_units = layer_to_activation_to_units
+        self._memory_to_layer_weights = memory_to_layer_weights
+        self._memory_unit_idxs_per_layer = memory_unit_idxs_per_layer
 
-        self.memory_size = memory_to_layer_weights[
+        self._memory_size = memory_to_layer_weights[
             min(memory_to_layer_weights)
         ].in_features
 
         self.module_list = nn.ModuleList(
-            [x[2] for x in self.computation_graph_weights]
-            + list(self.memory_to_layer_weights.values())
+            [x[2] for x in self._computation_graph_weights]
+            + list(self._memory_to_layer_weights.values())
         )
 
     def forward(self, inputs, memory=None):
         def recurrence(inputs_inner, memory_inner):
-            first_layer_num = self.computation_graph_weights[0][0]
+            first_layer_num = self._computation_graph_weights[0][0]
             layer_to_vals = {first_layer_num: inputs_inner}
 
             for i, (source_layer, target_layer, current_weights) in enumerate(
-                self.computation_graph_weights
+                self._computation_graph_weights
             ):
-                if i < len(self.computation_graph_weights) - 1:
-                    next_target_layer = self.computation_graph_weights[i + 1][1]
+                if i < len(self._computation_graph_weights) - 1:
+                    next_target_layer = self._computation_graph_weights[i + 1][1]
                 else:
                     next_target_layer = None
 
@@ -60,14 +60,14 @@ class MDLRNN(nn.Module):
                     # Only add memory and apply activations when all inputs to layer have been added.
 
                     # Add memory to layer.
-                    target_memory_weights = self.memory_to_layer_weights[target_layer]
+                    target_memory_weights = self._memory_to_layer_weights[target_layer]
                     incoming_memory = target_memory_weights(memory_inner)
                     layer_to_vals[target_layer] = (
                         layer_to_vals[target_layer] + incoming_memory
                     )
                     # Apply activations.
                     target_layer_activations_to_unit = (
-                        self.layer_to_activation_to_units[target_layer]
+                        self._layer_to_activation_to_units[target_layer]
                     )
                     activation_vals = self._apply_activations(
                         target_layer_activations_to_unit, layer_to_vals[target_layer]
@@ -76,8 +76,8 @@ class MDLRNN(nn.Module):
 
             memory_out = torch.zeros((inputs.shape[0], 0))
 
-            for layer_num in sorted(self.memory_unit_idxs_per_layer):
-                layer_mem_idxs = self.memory_unit_idxs_per_layer[layer_num]
+            for layer_num in sorted(self._memory_unit_idxs_per_layer):
+                layer_mem_idxs = self._memory_unit_idxs_per_layer[layer_num]
                 if len(layer_mem_idxs) == 0:
                     continue
 
@@ -92,7 +92,7 @@ class MDLRNN(nn.Module):
             memory = torch.zeros(
                 (
                     inputs.shape[0],
-                    self.memory_size,
+                    self._memory_size,
                 )
             )
 
@@ -108,8 +108,7 @@ class MDLRNN(nn.Module):
     def _apply_activations(cls, activation_to_unit, layer_vals) -> torch.Tensor:
         for activation_id in activation_to_unit:
             activation_unit_idxs = activation_to_unit[activation_id]
-            if activation_id == 0:
-                # Identity activation.
+            if activation_id == 0:  # Identity.
                 continue
             activation_func = cls._ACTIVATION_ID_TO_TORCH[activation_id]
             layer_vals[:, activation_unit_idxs] = activation_func(
