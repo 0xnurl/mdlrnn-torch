@@ -1,5 +1,5 @@
 import torch
-from torch import optim, nn
+from torch import nn, optim
 
 an_bn_net = torch.load("../models/an_bn.pt")
 
@@ -17,7 +17,7 @@ nn.functional.one_hot()
 if __name__ == "__main__":
     for epoch in range(1000):
         optimizer.zero_grad()
-        output = an_bn_net(inputs)
+        output = an_bn_net(inputs, output_function="softmax")
 
         loss = loss_func(output, targets)
         loss.backward()

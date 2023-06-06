@@ -3,14 +3,6 @@ from torch import nn
 
 
 class MDLRNN(nn.Module):
-    _ACTIVATION_ID_TO_TORCH = {
-        0: None,  # identity
-        1: torch.relu,
-        3: torch.tanh,
-        4: torch.square,
-        2: torch.sigmoid,
-    }
-
     def __init__(
         self,
         computation_graph_weights: tuple[tuple[int, int, nn.Linear]],
@@ -33,7 +25,14 @@ class MDLRNN(nn.Module):
             + list(self._memory_to_layer_weights.values())
         )
 
-    def forward(self, inputs, memory=None):
+    def forward(self, inputs, memory=None, output_layer="normalize"):
+        """
+        :param inputs: batched tensor of shape `(batch_size, sequence_length, num_input_classes)`.
+        :param memory: batch tensor of shape `(batch_size, memory_size)`.
+        :param output_layer: function to apply to outputss: `None` for raw logits, `"softmax"`, or `"normalize"` for simple normalization.
+        :return: tensor of shape `(batch_size, sequence_length, num_output_classes)`.
+        """
+
         def recurrence(inputs_inner, memory_inner):
             first_layer_num = self._computation_graph_weights[0][0]
             layer_to_vals = {first_layer_num: inputs_inner}
@@ -102,15 +101,29 @@ class MDLRNN(nn.Module):
             outputs.append(y_t)
 
         outputs = torch.stack(outputs, dim=1)
+
+        if output_layer is not None:
+            if output_layer == "softmax":
+                outputs = torch.softmax(outputs, dim=-1)
+            elif output_layer == "normalize":
+                outputs = nn.functional.normalize(outputs, p=1, dim=-1)
+            else:
+                raise ValueError(output_layer)
+
         return outputs
 
-    @classmethod
-    def _apply_activations(cls, activation_to_unit, layer_vals) -> torch.Tensor:
+    @staticmethod
+    def _apply_activations(activation_to_unit, layer_vals) -> torch.Tensor:
         for activation_id in activation_to_unit:
             activation_unit_idxs = activation_to_unit[activation_id]
             if activation_id == 0:  # Identity.
                 continue
-            activation_func = cls._ACTIVATION_ID_TO_TORCH[activation_id]
+            activation_func = {
+                1: torch.relu,
+                3: torch.tanh,
+                4: torch.square,
+                2: torch.sigmoid,
+            }[activation_id]
             layer_vals[:, activation_unit_idxs] = activation_func(
                 layer_vals[:, activation_unit_idxs]
             )
