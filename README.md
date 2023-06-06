@@ -7,7 +7,7 @@ To do this we minimize the encoding length of the network's architecture itself,
 
 Optimizing for encoding length makes it possible to prevent overfitting and reach perfect generalizations for many formal languages that aren't learned well by classical models, such as `aⁿbⁿ` and `Dyck-1`.
 
-It also results in very small networks, such as this `aⁿbⁿ` RNN that only has one hidden unit that serves as a counter:
+It also results in very small networks, such as this `aⁿbⁿ` RNN cell that only has one hidden unit that serves as a counter:
 
 <img src="assets/an_bn.png" width="430px" style="margin: 15px 0 5px 0"> 
 
@@ -42,13 +42,13 @@ Please use this BibTeX if you wish to cite this project in your publication:
 
 ## Fine-tuning
 
-The networks use only differentiable activations (ReLU, tanh, sigmoid) and a final softmax layer, so they can be fine-tuned using regular backpropagation. See `examples` folder.
+The networks use only standard activations (ReLU, tanh, sigmoid) and a final softmax layer, so they can be fine-tuned using regular backpropagation. See `examples` folder.
 
 ## Evolving networks from scratch for full MDL
 
 MDLRNNs optimize the Minimum Description Length objective, which isn't differentiable. We use a genetic algorithm to evolve networks and then port them to PyTorch, freezing the architecture but not the weights. 
 
-To evolve networks from scratch using a genetic algorithm, use the [genetic algorithm MDLRNN trainer](https://github.com/taucompling/mdlrnn) here:
+To evolve networks from scratch using a genetic algorithm, use the [Genetic Algorithm MDLRNN trainer](https://github.com/taucompling/mdlrnn) here:
 https://github.com/taucompling/mdlrnn/
 
 ## TODO
