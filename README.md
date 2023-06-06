@@ -44,7 +44,7 @@ More on evaluation metrics [here](https://direct.mit.edu/tacl/article/doi/10.116
 
 ## Fine-tuning
 
-The networks use only standard activations (ReLU, tanh, sigmoid) and a final softmax layer, so they can be fine-tuned using regular backpropagation. See `examples` folder.
+The networks use only standard activations (ReLU, tanh, sigmoid) and a final normalization/softmax layer, so they can be fine-tuned using regular backpropagation. See `examples/fine_tuning.py`.
 
 ## Evolving networks from scratch for full MDL
 
