@@ -25,17 +25,23 @@ More on evaluation metrics [here](https://direct.mit.edu/tacl/article/doi/10.116
 
 ## Examples
 
+### Accuracy test
+
+* [examples/accuracy_test.py](examples/accuracy_test.py)
+
+Demonstrate 100% accuracy on all `aⁿbⁿ` strings up to `n=1000`.
+
 ### Fine-tuning
 
 * [examples/fine_tuning.py](examples/fine_tuning.py)
 
-The networks use only standard activations (ReLU, tanh, sigmoid) and a final normalization/softmax layer, so they can be fine-tuned using regular backpropagation. 
+MDLRNNs are trained using a genetic algorithm. By using only standard activations (ReLU, tanh, sigmoid) and a final normalization/softmax layer they can be further fine-tuned using regular backpropagation.   
 
 ### Language generation
 
 * [examples/language_generation.py](examples/language_generation.py)
 
-For getting string continuations given a prefix.
+Generate continuations given a prefix, e.g. `#aaaaab...bbbb#`.
 
 ## Evolving networks from scratch for full MDL
 
