@@ -110,7 +110,7 @@ class MDLRNN(nn.Module):
             else:
                 raise ValueError(output_layer)
 
-        return outputs
+        return outputs, memory
 
     @staticmethod
     def _apply_activations(activation_to_unit, layer_vals) -> torch.Tensor:
