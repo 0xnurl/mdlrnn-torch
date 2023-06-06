@@ -15,18 +15,27 @@ It also results in very small networks, such as this `aⁿbⁿ` RNN cell that on
 
 `./models` contains pre-trained networks that are 100% accurate for the following formal languages:
 
-| Language | # Hidden units | Network checkpoint  | Test performance |
-|----------|----------------|---------------------|------------------|  
-| aⁿbⁿ     | 1              | an_bn.pt            | 100%             |
+| Language | # Hidden units | Network checkpoint | Test performance |
+|----------|----------------|--------------------|------------------|  
+| aⁿbⁿ     | 1              | an_bn.pt           | 100%             |
 | aⁿbᵐcⁿ⁺ᵐ   | 1              | an_bm_c_n_plus_m.pt | 100%             | 
-| Dyck-1   | 1              | dyck_1.pt           | 100%             | 
+| Dyck-1   | 1              | dyck1.pt           | 100%             | 
 
 More on evaluation metrics [here](https://direct.mit.edu/tacl/article/doi/10.1162/tacl_a_00489/112499/Minimum-Description-Length-Recurrent-Neural).
 
+## Examples
 
-## Fine-tuning
+### Fine-tuning
 
-The networks use only standard activations (ReLU, tanh, sigmoid) and a final normalization/softmax layer, so they can be fine-tuned using regular backpropagation. See `examples/fine_tuning.py`.
+* [examples/fine_tuning.py](examples/fine_tuning.py)
+
+The networks use only standard activations (ReLU, tanh, sigmoid) and a final normalization/softmax layer, so they can be fine-tuned using regular backpropagation. 
+
+### Language generation
+
+* [examples/language_generation.py](examples/language_generation.py)
+
+For getting string continuations given a prefix.
 
 ## Evolving networks from scratch for full MDL
 
