@@ -1,3 +1,5 @@
+import itertools
+
 import torch
 from torch import nn
 
@@ -5,13 +7,13 @@ from torch import nn
 class MDLRNN(nn.Module):
     def __init__(
         self,
-        computation_graph_weights: tuple[tuple[int, int, nn.Linear]],
+        computation_graph: dict[int, tuple[int, nn.Linear]],
         memory_to_layer_weights: dict[int, nn.Linear],
         memory_unit_idxs_per_layer: dict[int, list[int]],
         layer_to_activation_to_units: dict[int, dict[int, frozenset[int]]],
     ):
         super(MDLRNN, self).__init__()
-        self._computation_graph_weights = computation_graph_weights
+        self._computation_graph = computation_graph
         self._layer_to_activation_to_units = layer_to_activation_to_units
         self._memory_to_layer_weights = memory_to_layer_weights
         self._memory_unit_idxs_per_layer = memory_unit_idxs_per_layer
@@ -21,57 +23,52 @@ class MDLRNN(nn.Module):
         ].in_features
 
         self.module_list = nn.ModuleList(
-            [x[2] for x in self._computation_graph_weights]
+            [x[1] for x in list(itertools.chain(*self._computation_graph.values()))]
             + list(self._memory_to_layer_weights.values())
         )
 
-    def forward(self, inputs, memory=None, output_layer="normalize"):
+    def forward(self, inputs, memory=None, output_layer=None):
         """
         :param inputs: batched tensor of shape `(batch_size, sequence_length, num_input_classes)`.
         :param memory: batch tensor of shape `(batch_size, memory_size)`.
-        :param output_layer: function to apply to outputss: `None` for raw logits, `"softmax"`, or `"normalize"` for simple normalization.
+        :param output_layer: function to apply to outputs: `None` for raw logits, `"softmax"`, or `"normalize"` for simple normalization.
         :return: tensor of shape `(batch_size, sequence_length, num_output_classes)`.
         """
 
         def recurrence(inputs_inner, memory_inner):
-            first_layer_num = self._computation_graph_weights[0][0]
-            layer_to_vals = {first_layer_num: inputs_inner}
+            input_layer_num = min(self._computation_graph)
+            layer_to_vals = {input_layer_num: inputs_inner}
 
-            for i, (source_layer, target_layer, current_weights) in enumerate(
-                self._computation_graph_weights
-            ):
-                if i < len(self._computation_graph_weights) - 1:
-                    next_target_layer = self._computation_graph_weights[i + 1][1]
-                else:
-                    next_target_layer = None
-
-                source_layer_val = layer_to_vals[source_layer]
-                target_layer_val = current_weights(source_layer_val)
-
-                if target_layer in layer_to_vals:
-                    layer_to_vals[target_layer] = (
-                        layer_to_vals[target_layer] + target_layer_val
+            for source_layer in sorted(self._computation_graph):
+                # Add memory.
+                if source_layer in self._memory_to_layer_weights:
+                    memory_weights = self._memory_to_layer_weights[source_layer]
+                    incoming_memory = memory_weights(memory_inner)
+                    layer_to_vals[source_layer] = (
+                        layer_to_vals[source_layer] + incoming_memory
                     )
-                else:
-                    layer_to_vals[target_layer] = target_layer_val
 
-                if next_target_layer != target_layer:
-                    # Only add memory and apply activations when all inputs to layer have been added.
+                # Apply activations.
+                source_layer_activations_to_unit = self._layer_to_activation_to_units[
+                    source_layer
+                ]
+                activation_vals = self._apply_activations(
+                    source_layer_activations_to_unit, layer_to_vals[source_layer]
+                )
+                layer_to_vals[source_layer] = activation_vals
 
-                    # Add memory to layer.
-                    target_memory_weights = self._memory_to_layer_weights[target_layer]
-                    incoming_memory = target_memory_weights(memory_inner)
-                    layer_to_vals[target_layer] = (
-                        layer_to_vals[target_layer] + incoming_memory
-                    )
-                    # Apply activations.
-                    target_layer_activations_to_unit = (
-                        self._layer_to_activation_to_units[target_layer]
-                    )
-                    activation_vals = self._apply_activations(
-                        target_layer_activations_to_unit, layer_to_vals[target_layer]
-                    )
-                    layer_to_vals[target_layer] = activation_vals
+                for target_layer, current_weights in self._computation_graph[
+                    source_layer
+                ]:
+                    source_layer_val = layer_to_vals[source_layer]
+                    target_layer_val = current_weights(source_layer_val)
+
+                    if target_layer in layer_to_vals:
+                        layer_to_vals[target_layer] = (
+                            layer_to_vals[target_layer] + target_layer_val
+                        )
+                    else:
+                        layer_to_vals[target_layer] = target_layer_val
 
             memory_out = torch.zeros((inputs.shape[0], 0))
 
@@ -89,10 +86,7 @@ class MDLRNN(nn.Module):
 
         if memory is None:
             memory = torch.zeros(
-                (
-                    inputs.shape[0],
-                    self._memory_size,
-                )
+                (inputs.shape[0], self._memory_size),
             )
 
         outputs = []
@@ -106,6 +100,7 @@ class MDLRNN(nn.Module):
             if output_layer == "softmax":
                 outputs = torch.softmax(outputs, dim=-1)
             elif output_layer == "normalize":
+                outputs = torch.clamp(outputs, min=0, max=None)
                 outputs = nn.functional.normalize(outputs, p=1, dim=-1)
             else:
                 raise ValueError(output_layer)
