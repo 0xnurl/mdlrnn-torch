@@ -8,15 +8,15 @@ class MDLRNN(nn.Module):
     def __init__(
         self,
         computation_graph: dict[int, tuple[int, nn.Linear]],
+        layer_to_memory_weights: dict[int, nn.Linear],
         memory_to_layer_weights: dict[int, nn.Linear],
-        memory_unit_idxs_per_layer: dict[int, list[int]],
         layer_to_activation_to_units: dict[int, dict[int, frozenset[int]]],
     ):
         super(MDLRNN, self).__init__()
         self._computation_graph = computation_graph
         self._layer_to_activation_to_units = layer_to_activation_to_units
         self._memory_to_layer_weights = memory_to_layer_weights
-        self._memory_unit_idxs_per_layer = memory_unit_idxs_per_layer
+        self.layer_to_memory_weights = layer_to_memory_weights
 
         self._memory_size = memory_to_layer_weights[
             min(memory_to_layer_weights)
@@ -24,6 +24,7 @@ class MDLRNN(nn.Module):
 
         self.module_list = nn.ModuleList(
             [x[1] for x in list(itertools.chain(*self._computation_graph.values()))]
+            + list(self.layer_to_memory_weights.values())
             + list(self._memory_to_layer_weights.values())
         )
 
@@ -39,14 +40,20 @@ class MDLRNN(nn.Module):
             input_layer_num = min(self._computation_graph)
             layer_to_vals = {input_layer_num: inputs_inner}
 
+            memory_out = torch.zeros(
+                (
+                    inputs_inner.shape[0],
+                    self._memory_size,
+                )
+            )
+
             for source_layer in sorted(self._computation_graph):
                 # Add memory.
-                if source_layer in self._memory_to_layer_weights:
-                    memory_weights = self._memory_to_layer_weights[source_layer]
-                    incoming_memory = memory_weights(memory_inner)
-                    layer_to_vals[source_layer] = (
-                        layer_to_vals[source_layer] + incoming_memory
-                    )
+                memory_weights = self._memory_to_layer_weights[source_layer]
+                incoming_memory = memory_weights(memory_inner)
+                layer_to_vals[source_layer] = (
+                    layer_to_vals[source_layer] + incoming_memory
+                )
 
                 # Apply activations.
                 source_layer_activations_to_unit = self._layer_to_activation_to_units[
@@ -57,6 +64,7 @@ class MDLRNN(nn.Module):
                 )
                 layer_to_vals[source_layer] = activation_vals
 
+                # Feed-forward.
                 for target_layer, current_weights in self._computation_graph[
                     source_layer
                 ]:
@@ -70,16 +78,10 @@ class MDLRNN(nn.Module):
                     else:
                         layer_to_vals[target_layer] = target_layer_val
 
-            memory_out = torch.zeros((inputs.shape[0], 0))
-
-            for layer_num in sorted(self._memory_unit_idxs_per_layer):
-                layer_mem_idxs = self._memory_unit_idxs_per_layer[layer_num]
-                if len(layer_mem_idxs) == 0:
-                    continue
-
-                layer_val = layer_to_vals[layer_num]
-                memory_from_layer = layer_val[:, layer_mem_idxs]
-                memory_out = torch.concat([memory_out, memory_from_layer], dim=1)
+                # Write to memory.
+                memory_out = memory_out + self.layer_to_memory_weights[source_layer](
+                    layer_to_vals[source_layer]
+                )
 
             y_out = layer_to_vals[max(layer_to_vals)]
             return y_out, memory_out
