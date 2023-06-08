@@ -13,13 +13,14 @@ It also results in very small networks, such as this `aⁿbⁿ` RNN cell that on
 
 ## Pre-trained models
 
-`./models` contains pre-trained networks that are 100% accurate for the following formal languages:
+`./models` contains pre-trained networks for the following formal languages:
 
-| Language | # Hidden units | Network checkpoint | Test performance |
-|----------|----------------|--------------------|------------------|  
-| aⁿbⁿ     | 1              | an_bn.pt           | 100%             |
-| aⁿbᵐcⁿ⁺ᵐ   | 1              | an_bm_c_n_plus_m.pt | 100%             | 
-| Dyck-1   | 1              | dyck1.pt           | 100%             | 
+| Language | # Hidden units   | Network checkpoint  | Test accuracy | Test set                                                                    | 
+|----------|------------------|---------------------|---------------|-----------------------------------------------------------------------------|
+| aⁿbⁿ     | 1                | an_bn.pt            | 100%          | All strings `n<=5000`                                                       |
+| aⁿbⁿcⁿ    | 5                | an_bn_cn.pt         | 99.7%         | All strings `n<=5000`                                                       |
+| aⁿbᵐcⁿ⁺ᵐ | 1                | an_bm_c_n_plus_m.pt | 100%          | First 5,000 strings (sorted by `n+m`)                                       |
+| Dyck-1   | 1                | dyck1.pt            | 100%          | First 5,000 strings (listed [here](https://github.com/0xnurl/dyck-strings)) | 
 
 More on evaluation metrics [here](https://direct.mit.edu/tacl/article/doi/10.1162/tacl_a_00489/112499/Minimum-Description-Length-Recurrent-Neural).
 
