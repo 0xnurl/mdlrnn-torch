@@ -15,12 +15,12 @@ It also results in very small networks, such as this `aⁿbⁿ` RNN cell that on
 
 `./models` contains pre-trained networks for the following formal languages:
 
-| Language | # Hidden units   | Checkpoint          | Test set                                                                     | Test accuracy | 
-|----------|------------------|---------------------|------------------------------------------------------------------------------|---------------|
-| aⁿbⁿ     | 1                | an_bn.pt            | All strings `n<=10,000`                                                      | 100%          |
-| aⁿbⁿcⁿ    | 5                | an_bn_cn.pt         | All strings `n<=10,000`                                                      | 99.7%         |
-| aⁿbᵐcⁿ⁺ᵐ | 1                | an_bm_c_n_plus_m.pt | First 10,000 strings (sorted by `n+m`)                                       | 100%          |
-| Dyck-1   | 1                | dyck1.pt            | First 10,000 strings (listed [here](https://github.com/0xnurl/dyck-strings)) | 100%          | 
+| Language | # Hidden units   | Checkpoint          | Test set                                                                 | Test accuracy | 
+|----------|------------------|---------------------|--------------------------------------------------------------------------|---------------|
+| aⁿbⁿ     | 1                | an_bn.pt            | All strings `n<=10,000`                                                  | 100%          |
+| aⁿbⁿcⁿ    | 5                | an_bn_cn.pt         | All strings `n<=10,000`                                                  | 99.7%         |
+| aⁿbᵐcⁿ⁺ᵐ | 1                | an_bm_c_n_plus_m.pt | First 10,000 strings (sorted by `n+m`, see [here](https://github.com/taucompling/bliss/))                                 | 100%          |
+| Dyck-1   | 1                | dyck1.pt            | First 10,000 strings (see [here](https://github.com/taucompling/bliss/)) | 100%          | 
 
 More on evaluation metrics [here](https://direct.mit.edu/tacl/article/doi/10.1162/tacl_a_00489/112499/Minimum-Description-Length-Recurrent-Neural).
 
