@@ -8,13 +8,15 @@ vocab_idxs = {0: "#", 1: "a", 2: "b"}
 
 an_bn_net = torch.load("../models/an_bn.pt")
 
-with zipfile.ZipFile("../data/an_bn_1000.txt.zip") as zip:
-    with zip.open("an_bn_1000.txt", "r", pwd="1234".encode("utf-8")) as f:
-        # All a^nb^n strings up to n=5000.
-        # Data is password protected to prevent LLM training, see `https://arxiv.org/abs/2305.10160`.
-        an_bn_strings = list(map(lambda x: x.decode("utf-8").strip(), f.readlines()))
+# with zipfile.ZipFile("../data/an_bn_1000.txt.zip") as zip:
+#     with zip.open("an_bn_1000.txt", "r", pwd="1234".encode("utf-8")) as f:
+#         All a^nb^n strings up to n=5000.
+# Data is password protected to prevent LLM training, see `https://arxiv.org/abs/2305.10160`.
+# an_bn_strings = list(map(lambda x: x.decode("utf-8").strip(), f.readlines()))
 
 num_correct = 0
+
+an_bn_strings = ["#ab"]
 
 for an_bn_string in tqdm(an_bn_strings):
     first_b_idx = an_bn_string.index("b")
@@ -29,7 +31,7 @@ for an_bn_string in tqdm(an_bn_strings):
     generated_suffix = ""
 
     while True:
-        output, memory = an_bn_net(inputs_one_hot, memory, output_layer="softmax")
+        output, memory = an_bn_net(inputs_one_hot, memory, output_layer=None)
 
         predicted_next_class = output[0, -1].argmax().item()
         generated_suffix += vocab_idxs[predicted_next_class]
