@@ -83,7 +83,12 @@ class MDLRNN(nn.Module):
                     layer_to_vals[source_layer]
                 )
 
-            y_out = layer_to_vals[max(layer_to_vals)]
+            output_layer_num = max(layer_to_vals)
+            y_out = layer_to_vals[output_layer_num]
+            memory_to_output_layer = self._memory_to_layer_weights[output_layer_num](
+                memory_inner
+            )
+            y_out = y_out + memory_to_output_layer
             return y_out, memory_out
 
         if memory is None:
