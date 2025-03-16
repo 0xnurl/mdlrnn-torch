@@ -3,14 +3,16 @@ import itertools
 import torch
 from torch import nn
 
+ComputationGraph = dict[int, tuple[tuple[int, nn.Linear], ...]]
+
 
 class MDLRNN(nn.Module):
     def __init__(
         self,
-        computation_graph: dict[int, tuple[int, nn.Linear]],
+        computation_graph: ComputationGraph,
         layer_to_memory_weights: dict[int, nn.Linear],
         memory_to_layer_weights: dict[int, nn.Linear],
-        layer_to_activation_to_units: dict[int, dict[int, frozenset[int]]],
+        layer_to_activation_to_units: dict[int, dict[int, tuple[int, ...]]],
     ):
         super(MDLRNN, self).__init__()
         self._computation_graph = computation_graph
@@ -83,7 +85,17 @@ class MDLRNN(nn.Module):
                     layer_to_vals[source_layer]
                 )
 
-            y_out = layer_to_vals[max(layer_to_vals)]
+            # Add memory and apply activations to output layer.
+            output_layer_num = max(layer_to_vals)
+            y_out = layer_to_vals[output_layer_num]
+            memory_to_output_layer = self._memory_to_layer_weights[output_layer_num](
+                memory_inner
+            )
+            y_out = y_out + memory_to_output_layer
+            y_out = self._apply_activations(
+                self._layer_to_activation_to_units[output_layer_num], y_out
+            )
+
             return y_out, memory_out
 
         if memory is None:
