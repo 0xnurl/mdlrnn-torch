@@ -51,11 +51,12 @@ class MDLRNN(nn.Module):
 
             for source_layer in sorted(self._computation_graph):
                 # Add memory.
-                memory_weights = self._memory_to_layer_weights[source_layer]
-                incoming_memory = memory_weights(memory_inner)
-                layer_to_vals[source_layer] = (
-                    layer_to_vals[source_layer] + incoming_memory
-                )
+                if source_layer in self._memory_to_layer_weights:
+                    memory_weights = self._memory_to_layer_weights[source_layer]
+                    incoming_memory = memory_weights(memory_inner)
+                    layer_to_vals[source_layer] = (
+                        layer_to_vals[source_layer] + incoming_memory
+                    )
 
                 # Apply activations.
                 source_layer_activations_to_unit = self._layer_to_activation_to_units[
@@ -81,9 +82,10 @@ class MDLRNN(nn.Module):
                         layer_to_vals[target_layer] = target_layer_val
 
                 # Write to memory.
-                memory_out = memory_out + self.layer_to_memory_weights[source_layer](
-                    layer_to_vals[source_layer]
-                )
+                if source_layer in self.layer_to_memory_weights:
+                    memory_out = memory_out + self.layer_to_memory_weights[
+                        source_layer
+                    ](layer_to_vals[source_layer])
 
             # Add memory and apply activations to output layer.
             output_layer_num = max(layer_to_vals)
