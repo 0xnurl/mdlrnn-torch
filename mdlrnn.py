@@ -3,11 +3,13 @@ import itertools
 import torch
 from torch import nn
 
+ComputationGraph = dict[int, tuple[tuple[int, nn.Linear], ...]]
+
 
 class MDLRNN(nn.Module):
     def __init__(
         self,
-        computation_graph: dict[int, tuple[int, nn.Linear]],
+        computation_graph: ComputationGraph,
         layer_to_memory_weights: dict[int, nn.Linear],
         memory_to_layer_weights: dict[int, nn.Linear],
         layer_to_activation_to_units: dict[int, dict[int, frozenset[int]]],
