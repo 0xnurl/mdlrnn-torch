@@ -90,10 +90,13 @@ class MDLRNN(nn.Module):
             # Add memory and apply activations to output layer.
             output_layer_num = max(layer_to_vals)
             y_out = layer_to_vals[output_layer_num]
-            memory_to_output_layer = self._memory_to_layer_weights[output_layer_num](
-                memory_inner
-            )
-            y_out = y_out + memory_to_output_layer
+
+            if output_layer in self._memory_to_layer_weights:
+                memory_to_output_layer = self._memory_to_layer_weights[
+                    output_layer_num
+                ](memory_inner)
+                y_out = y_out + memory_to_output_layer
+
             y_out = self._apply_activations(
                 self._layer_to_activation_to_units[output_layer_num], y_out
             )
@@ -131,9 +134,9 @@ class MDLRNN(nn.Module):
                 continue
             activation_func = {
                 1: torch.relu,
+                2: torch.sigmoid,
                 3: torch.tanh,
                 4: torch.square,
-                2: torch.sigmoid,
             }[activation_id]
             layer_vals[:, activation_unit_idxs] = activation_func(
                 layer_vals[:, activation_unit_idxs]
