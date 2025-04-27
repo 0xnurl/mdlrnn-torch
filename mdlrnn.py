@@ -106,6 +106,7 @@ class MDLRNN(nn.Module):
         if memory is None:
             memory = torch.zeros(
                 (inputs.shape[0], self._memory_size),
+                dtype=next(iter(self._computation_graph.values()))[1][1].weight.dtype,
             )
 
         outputs = []
