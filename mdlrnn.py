@@ -49,7 +49,10 @@ class MDLRNN(nn.Module):
                 )
             )
 
-            for source_layer in sorted(self._computation_graph):
+            source_layers = set(self._computation_graph.keys()) | set(
+                self.layer_to_memory_weights.keys()
+            )
+            for source_layer in sorted(source_layers):
                 # Add memory.
                 if source_layer in self._memory_to_layer_weights:
                     memory_weights = self._memory_to_layer_weights[source_layer]
@@ -68,9 +71,9 @@ class MDLRNN(nn.Module):
                 layer_to_vals[source_layer] = activation_vals
 
                 # Feed-forward.
-                for target_layer, current_weights in self._computation_graph[
-                    source_layer
-                ]:
+                for target_layer, current_weights in self._computation_graph.get(
+                    source_layer, ()
+                ):
                     source_layer_val = layer_to_vals[source_layer]
                     target_layer_val = current_weights(source_layer_val)
 
